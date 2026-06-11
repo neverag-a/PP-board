@@ -3,16 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>실시간 종합 금융 대시보드 (최종 가동 완료)</title>
+    <title>실시간 종합 금융 대시보드</title>
     <style>
         :root {
             --bg-color: #0f172a;
             --card-bg: #1e293b;
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
-            --up-color: #ef4444;
-            --down-color: #3b82f6;
-            --neutral-color: #10b981;
         }
         body {
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -26,148 +23,116 @@
         }
         h1 { font-size: 1.8rem; margin-bottom: 5px; letter-spacing: -0.5px; }
         .timestamp-container { display: flex; align-items: center; gap: 10px; margin-bottom: 40px; color: var(--text-sub); font-size: 0.9rem; }
-        .dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; width: 100%; max-width: 1200px; }
-        .card { background-color: var(--card-bg); border-radius: 16px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .market-name { font-size: 1.1rem; font-weight: 600; }
-        .badge { font-size: 0.75rem; padding: 4px 8px; border-radius: 20px; font-weight: bold; background-color: rgba(255, 255, 255, 0.1); color: var(--text-sub); }
-        .market-value { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
-        .market-change { font-size: 1rem; font-weight: 500; display: flex; align-items: center; gap: 4px; }
-        .up { color: var(--up-color); }
-        .down { color: var(--down-color); }
-        .neutral { color: var(--neutral-color); }
+        .dashboard-container { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
+            width: 100%; 
+            max-width: 1200px; 
+        }
+        .card { 
+            background-color: var(--card-bg); 
+            border-radius: 16px; 
+            padding: 15px; 
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            height: 140px;
+            position: relative;
+            overflow: hidden;
+        }
     </style>
 </head>
 <body>
 
     <h1>Global & Domestic Market Dashboard</h1>
     <div class="timestamp-container">
-        <div id="time-text">보안 필터 우회 및 데이터 동기화 중...</div>
+        <div id="time-text">🟢 트레이딩뷰 위젯 라이브 전용 데이터 채널 연결 성공</div>
     </div>
 
     <div class="dashboard-container">
+        <!-- 코스피 지수 -->
         <div class="card">
-            <div class="card-header"><span class="market-name">코스피 지수</span><span class="badge">KOSPI</span></div>
-            <div class="market-value" id="kospi-val">Loading...</div>
-            <div class="market-change" id="kospi-chg">-</div>
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://tradingview.com" async>
+                {
+                "symbol": "KRX:KOSPI", "width": "100%", "height": "100%", "locale": "ko", "dateRange": "1D", "colorTheme": "dark", "isTransparent": true, "autosize": true, "largeChartUrl": ""
+                }
+                </script>
+            </div>
         </div>
+
+        <!-- 삼성전자 -->
         <div class="card">
-            <div class="card-header"><span class="market-name">삼성전자</span><span class="badge">005930</span></div>
-            <div class="market-value" id="samsung-val">Loading...</div>
-            <div class="market-change" id="samsung-chg">-</div>
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://tradingview.com" async>
+                {
+                "symbol": "KRX:005930", "width": "100%", "height": "100%", "locale": "ko", "dateRange": "1D", "colorTheme": "dark", "isTransparent": true, "autosize": true, "largeChartUrl": ""
+                }
+                </script>
+            </div>
         </div>
+
+        <!-- SK하이닉스 -->
         <div class="card">
-            <div class="card-header"><span class="market-name">SK하이닉스</span><span class="badge">000660</span></div>
-            <div class="market-value" id="hynix-val">Loading...</div>
-            <div class="market-change" id="hynix-chg">-</div>
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://tradingview.com" async>
+                {
+                "symbol": "KRX:000660", "width": "100%", "height": "100%", "locale": "ko", "dateRange": "1D", "colorTheme": "dark", "isTransparent": true, "autosize": true, "largeChartUrl": ""
+                }
+                </script>
+            </div>
         </div>
+
+        <!-- 나스닥 종합지수 -->
         <div class="card">
-            <div class="card-header"><span class="market-name">나스닥 종합지수</span><span class="badge">NASDAQ</span></div>
-            <div class="market-value" id="nasdaq-val">Loading...</div>
-            <div class="market-change" id="nasdaq-chg">-</div>
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://tradingview.com" async>
+                {
+                "symbol": "NASDAQ:IXIC", "width": "100%", "height": "100%", "locale": "ko", "dateRange": "1D", "colorTheme": "dark", "isTransparent": true, "autosize": true, "largeChartUrl": ""
+                }
+                </script>
+            </div>
         </div>
+
+        <!-- 필라델피아 반도체 -->
         <div class="card">
-            <div class="card-header"><span class="market-name">필라델피아 반도체</span><span class="badge">SOX</span></div>
-            <div class="market-value" id="sox-val">Loading...</div>
-            <div class="market-change" id="sox-chg">-</div>
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://tradingview.com" async>
+                {
+                "symbol": "PHLX:SOX", "width": "100%", "height": "100%", "locale": "ko", "dateRange": "1D", "colorTheme": "dark", "isTransparent": true, "autosize": true, "largeChartUrl": ""
+                }
+                </script>
+            </div>
         </div>
+
+        <!-- 원/달러 환율 -->
         <div class="card">
-            <div class="card-header"><span class="market-name">원/달러 환율</span><span class="badge">USD / KRW</span></div>
-            <div class="market-value" id="fx-val">Loading...</div>
-            <div class="market-change" id="fx-chg">-</div>
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://tradingview.com" async>
+                {
+                "symbol": "FX_IDC:USDKRW", "width": "100%", "height": "100%", "locale": "ko", "dateRange": "1D", "colorTheme": "dark", "isTransparent": true, "autosize": true, "largeChartUrl": ""
+                }
+                </script>
+            </div>
         </div>
+
+        <!-- 국제 유가 (WTI) -->
         <div class="card">
-            <div class="card-header"><span class="market-name">국제 유가 (WTI)</span><span class="badge">Crude Oil</span></div>
-            <div class="market-value" id="wti-val">Loading...</div>
-            <div class="market-change" id="wti-chg">-</div>
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://tradingview.com" async>
+                {
+                "symbol": "NYMEX:CL1!", "width": "100%", "height": "100%", "locale": "ko", "dateRange": "1D", "colorTheme": "dark", "isTransparent": true, "autosize": true, "largeChartUrl": ""
+                }
+                </script>
+            </div>
         </div>
     </div>
 
-    <script type="text/javascript">
-        const FORMAT = { INDEX: 'INDEX', KRW_STOCK: 'KRW_STOCK', EXCHANGE: 'EXCHANGE', OIL: 'OIL' };
-
-        function updateUI(valId, chgId, price, change, changePercent, formatType) {
-            const valEl = document.getElementById(valId);
-            const chgEl = document.getElementById(chgId);
-            if (!valEl || !chgEl) return;
-
-            if (price === undefined || price === null || isNaN(Number(price))) {
-                valEl.textContent = "장외/휴장";
-                chgEl.textContent = "-";
-                return;
-            }
-
-            const numPrice = Number(price);
-            const numChange = Number(change || 0);
-            const numPercent = Number(changePercent || 0);
-
-            if (formatType === FORMAT.KRW_STOCK) {
-                valEl.textContent = `${Math.floor(numPrice).toLocaleString('ko-KR')}원`;
-            } else if (formatType === FORMAT.EXCHANGE) {
-                valEl.textContent = `${numPrice.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}원`;
-            } else if (formatType === FORMAT.OIL) {
-                valEl.textContent = `$${numPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            } else {
-                valEl.textContent = numPrice.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            }
-
-            const sign = numChange > 0 ? '▲ +' : (numChange < 0 ? '▼ ' : '');
-            const isKrwStock = formatType === FORMAT.KRW_STOCK;
-            const formattedChange = Math.abs(numChange).toLocaleString('ko-KR', { maximumFractionDigits: isKrwStock ? 0 : 2 });
-            const formattedPercent = numPercent.toFixed(2);
-            
-            chgEl.textContent = `${sign}${formattedChange} (${formattedPercent}%)`;
-            chgEl.className = "market-change";
-            if (numChange > 0) chgEl.classList.add('up');
-            else if (numChange < 0) chgEl.classList.add('down');
-            else chgEl.classList.add('neutral');
-        }
-
-        async function fetchMarketData() {
-            try {
-                // 국내외 핵심 자산 데이터를 한 번에 묶어서 호출하는 통합 심볼 배열
-                const symbols = '^KS11,005930.KS,000660.KS,^IXIC,^SOX,KRW=X,CL=F';
-                const targetUrl = `https://yahoo.com{symbols}`;
-                
-                // 브라우저의 CORS 제한 정책을 무력화하는 무점검 초고속 프록시 터널 가동
-                const proxyUrl = `https://corsproxy.io{encodeURIComponent(targetUrl)}`;
-                
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error('네트워크 응답 지연');
-                
-                const data = await response.json();
-                const result = data.quoteResponse?.result;
-                if (!result || result.length === 0) throw new Error('유효 데이터 공백');
-
-                const getSymbolData = (sym) => result.find(item => item.symbol === sym) || {};
-
-                const kospi = getSymbolData('^KS11');
-                const samsung = getSymbolData('005930.KS');
-                const hynix = getSymbolData('000660.KS');
-                const nasdaq = getSymbolData('^IXIC');
-                const sox = getSymbolData('^SOX');
-                const fx = getSymbolData('KRW=X');
-                const wti = getSymbolData('CL=F');
-
-                updateUI('kospi-val', 'kospi-chg', kospi.regularMarketPrice, kospi.regularMarketChange, kospi.regularMarketChangePercent, FORMAT.INDEX);
-                updateUI('samsung-val', 'samsung-chg', samsung.regularMarketPrice, samsung.regularMarketChange, samsung.regularMarketChangePercent, FORMAT.KRW_STOCK);
-                updateUI('hynix-val', 'hynix-chg', hynix.regularMarketPrice, hynix.regularMarketChange, hynix.regularMarketChangePercent, FORMAT.KRW_STOCK);
-                updateUI('nasdaq-val', 'nasdaq-chg', nasdaq.regularMarketPrice, nasdaq.regularMarketChange, nasdaq.regularMarketChangePercent, FORMAT.INDEX);
-                updateUI('sox-val', 'sox-chg', sox.regularMarketPrice, sox.regularMarketChange, sox.regularMarketChangePercent, FORMAT.INDEX);
-                updateUI('fx-val', 'fx-chg', fx.regularMarketPrice, fx.regularMarketChange, fx.regularMarketChangePercent, FORMAT.EXCHANGE);
-                updateUI('wti-val', 'wti-chg', wti.regularMarketPrice, wti.regularMarketChange, wti.regularMarketChangePercent, FORMAT.OIL);
-
-                const now = new Date();
-                document.getElementById('time-text').textContent = `🟢 실시간 전용 우회 터널 가동 성공 (동기화 완료: ${now.toLocaleTimeString('ko-KR')} / 1분 주기)`;
-            } catch (error) {
-                console.error("최종 동기화 예외 캐치:", error);
-                const now = new Date();
-                document.getElementById('time-text').textContent = `❌ 예외 트래픽 제어 작동 중 (자동 우회 재연동... - ${now.toLocaleTimeString('ko-KR')})`;
-            }
-        }
-
-        fetchMarketData();
-        setInterval(fetchMarketData, 60000);
-    </script>
 </body>
 </html>
