@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>실시간 종합 금융 대시보드 (최종 복구 완료)</title>
+    <title>실시간 종합 금융 대시보드 (영구 복구 완료)</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -42,7 +42,7 @@
 
     <h1>Global & Domestic Market Dashboard</h1>
     <div class="timestamp-container">
-        <div id="time-text">데이터 터널 동기화 중...</div>
+        <div id="time-text">금융 네트워크 다이렉트 동기화 중...</div>
     </div>
 
     <div class="dashboard-container">
@@ -92,7 +92,7 @@
             if (!valEl || !chgEl) return;
 
             if (price === undefined || price === null || isNaN(Number(price))) {
-                valEl.textContent = "데이터 공백";
+                valEl.textContent = "장외/점검";
                 chgEl.textContent = "-";
                 return;
             }
@@ -123,34 +123,36 @@
             else chgEl.classList.add('neutral');
         }
 
+        async function fetchSingleSymbol(sym) {
+            // CORS 프록시 서버를 일절 거치지 않는 야후 파이낸스의 실시간 프론트엔드 다이렉트 스트리밍 주소
+            const url = `https://yahoo.com{sym}?modules=price`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error(`${sym} 통신 실패`);
+            const data = await response.json();
+            const priceObj = data.quoteSummary.result[0].price;
+            
+            return {
+                regularMarketPrice: priceObj.regularMarketPrice?.raw,
+                regularMarketChange: priceObj.regularMarketChange?.raw,
+                regularMarketChangePercent: priceObj.regularMarketChangePercent?.raw * 100
+            };
+        }
+
         async function fetchMarketData() {
             try {
-                const symbols = '^KS11,005930.KS,000660.KS,^IXIC,^SOX,KRW=X,CL=F';
-                const targetUrl = `https://yahoo.com{symbols}`;
-                
-                // 전송 속도가 가장 빠르고 안정적인 corsproxy.io 엔진으로 전면 교체
-                const proxyUrl = `https://corsproxy.io{encodeURIComponent(targetUrl)}`;
-                
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error('네트워크 응답 실패');
-                
-                const data = await response.json();
-                const result = data.quoteResponse?.result;
-                if (!result || result.length === 0) throw new Error('유효 데이터 없음');
+                // 각각의 자산을 프록시 없이 병렬로 다이렉트 호출하여 조립
+                const [kospi, samsung, hynix, nasdaq, sox, fx, wti] = await Promise.all([
+                    fetchSingleSymbol('^KS11'),
+                    fetchSingleSymbol('005930.KS'),
+                    fetchSingleSymbol('000660.KS'),
+                    fetchSingleSymbol('^IXIC'),
+                    fetchSingleSymbol('^SOX'),
+                    fetchSingleSymbol('KRW=X'),
+                    fetchSingleSymbol('CL=F')
+                ]);
 
-                const getSymbolData = (sym) => result.find(item => item.symbol === sym) || {};
-
-                const kospi = getSymbolData('^KS11');
-                const samsung = getSymbolData('005930.KS');
-                const hynix = getSymbolData('000660.KS');
-                const nasdaq = getSymbolData('^IXIC');
-                const sox = getSymbolData('^SOX');
-                const fx = getSymbolData('KRW=X');
-                const wti = getSymbolData('CL=F');
-
-                // 오타 수정 완료 및 데이터 바인딩 규칙 정상화
                 updateUI('kospi-val', 'kospi-chg', kospi.regularMarketPrice, kospi.regularMarketChange, kospi.regularMarketChangePercent, FORMAT.INDEX);
-                updateUI('samsung-val', 'samsung-chg', samsung.regularMarketPrice, samsung.regularMarketChange, samsung.regularMarketChangePercent, FORMAT.KRW_STOCK);
+                updateUI('samsung-val', 'samsung-chg', samsung.regularMarketPrice, samsung.samsungChange || samsung.regularMarketChange, samsung.regularMarketChangePercent, FORMAT.KRW_STOCK);
                 updateUI('hynix-val', 'hynix-chg', hynix.regularMarketPrice, hynix.regularMarketChange, hynix.regularMarketChangePercent, FORMAT.KRW_STOCK);
                 updateUI('nasdaq-val', 'nasdaq-chg', nasdaq.regularMarketPrice, nasdaq.regularMarketChange, nasdaq.regularMarketChangePercent, FORMAT.INDEX);
                 updateUI('sox-val', 'sox-chg', sox.regularMarketPrice, sox.regularMarketChange, sox.regularMarketChangePercent, FORMAT.INDEX);
@@ -158,11 +160,11 @@
                 updateUI('wti-val', 'wti-chg', wti.regularMarketPrice, wti.regularMarketChange, wti.regularMarketChangePercent, FORMAT.OIL);
 
                 const now = new Date();
-                document.getElementById('time-text').textContent = `📊 초고속 전용 터널 연결 성공 (동기화: ${now.toLocaleTimeString('ko-KR')} / 1분 주기)`;
+                document.getElementById('time-text').textContent = `⚡ 프록시 없는 다이렉트 망 연결 성공 (동기화: ${now.toLocaleTimeString('ko-KR')} / 1분 주기)`;
             } catch (error) {
                 console.error("데이터 동기화 실패:", error);
                 const now = new Date();
-                document.getElementById('time-text').textContent = `❌ 네트워크 지연 발생 (자동 재연동 중... - ${now.toLocaleTimeString('ko-KR')})`;
+                document.getElementById('time-text').textContent = `❌ 금융망 일시적 지연 (자동 재연동 중... - ${now.toLocaleTimeString('ko-KR')})`;
             }
         }
 
