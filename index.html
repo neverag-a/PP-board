@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>실시간 종합 금융 대시보드 (보안 우회 완료)</title>
+    <title>실시간 종합 금융 대시보드 (터널 복구 완료)</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -84,20 +84,39 @@
     </div>
 
     <script type="text/javascript">
-        function updateUI(valId, chgId, price, change, changePercent, isWon = false) {
+        const FORMAT = { INDEX: 'INDEX', KRW_STOCK: 'KRW_STOCK', EXCHANGE: 'EXCHANGE', OIL: 'OIL' };
+
+        function updateUI(valId, chgId, price, change, changePercent, formatType) {
             const valEl = document.getElementById(valId);
             const chgEl = document.getElementById(chgId);
             if (!valEl || !chgEl) return;
 
-            const formattedPrice = Number(price).toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-            valEl.textContent = isWon ? `${formattedPrice.split('.')[0]}원` : formattedPrice;
+            if (price === undefined || price === null || isNaN(Number(price))) {
+                valEl.textContent = "지연 발생";
+                chgEl.textContent = "-";
+                return;
+            }
 
-            const numChange = Number(change);
+            const numPrice = Number(price);
+            const numChange = Number(change || 0);
+            const numPercent = Number(changePercent || 0);
+
+            if (formatType === FORMAT.KRW_STOCK) {
+                valEl.textContent = `${Math.floor(numPrice).toLocaleString('ko-KR')}원`;
+            } else if (formatType === FORMAT.EXCHANGE) {
+                valEl.textContent = `${numPrice.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}원`;
+            } else if (formatType === FORMAT.OIL) {
+                valEl.textContent = `$${numPrice.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            } else {
+                valEl.textContent = numPrice.toLocaleString('ko-KR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
             const sign = numChange > 0 ? '▲ +' : (numChange < 0 ? '▼ ' : '');
-            const formattedPercent = Number(changePercent).toFixed(2);
+            const isKrwStock = formatType === FORMAT.KRW_STOCK;
+            const formattedChange = Math.abs(numChange).toLocaleString('ko-KR', { maximumFractionDigits: isKrwStock ? 0 : 2 });
+            const formattedPercent = numPercent.toFixed(2);
             
-            chgEl.textContent = `${sign}${numChange.toLocaleString('ko-KR')} (${formattedPercent}%)`;
-            
+            chgEl.textContent = `${sign}${formattedChange} (${formattedPercent}%)`;
             chgEl.className = "market-change";
             if (numChange > 0) chgEl.classList.add('up');
             else if (numChange < 0) chgEl.classList.add('down');
@@ -107,16 +126,22 @@
         async function fetchMarketData() {
             try {
                 const symbols = '^KS11,005930.KS,000660.KS,^IXIC,^SOX,KRW=X,CL=F';
-                const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${symbols}`;
                 
-                // 크롬 CORS 보안 정책을 완전히 파쇄하는 올오리진 프록시 서버 경유 호출
-                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`);
+                // 엔진 차단 및 무력화 대응을 위해 야후 파이낸스 최신 v6 엔드포인트 조합으로 우회 우회로 개설
+                const targetUrl = `https://yahoo.com{symbols}`;
                 
+                // 프록시 서버 꼬임 현상을 파쇄하기 위해 무작위 캐시 파괴(timestamp) 파라미터 적용
+                const proxyUrl = `https://allorigins.win{encodeURIComponent(targetUrl)}&_ts=${Date.now()}`;
+                
+                const response = await fetch(proxyUrl);
                 if (!response.ok) throw new Error('네트워크 응답 실패');
                 
                 const wrapper = await response.json();
-                const data = JSON.parse(wrapper.contents); // 문자열로 포장된 데이터를 다시 JSON화
-                const result = data.quoteResponse.result;
+                if (!wrapper.contents) throw new Error('데이터 구조 불일치');
+
+                const data = JSON.parse(wrapper.contents);
+                const result = data.quoteResponse?.result;
+                if (!result || result.length === 0) throw new Error('유효 데이터 없음');
 
                 const getSymbolData = (sym) => result.find(item => item.symbol === sym) || {};
 
@@ -128,23 +153,20 @@
                 const fx = getSymbolData('KRW=X');
                 const wti = getSymbolData('CL=F');
 
-                updateUI('kospi-val', 'kospi-chg', kospi.regularMarketPrice, kospi.regularMarketChange, kospi.regularMarketChangePercent);
-                updateUI('samsung-val', 'samsung-chg', samsung.regularMarketPrice, samsung.regularMarketChange, samsung.regularMarketChangePercent, true);
-                updateUI('hynix-val', 'hynix-chg', hynix.regularMarketPrice, hynix.regularMarketChange, hynix.regularMarketChangePercent, true);
-                updateUI('nasdaq-val', 'nasdaq-chg', nasdaq.regularMarketPrice, nasdaq.regularMarketChange, nasdaq.regularMarketChangePercent);
-                updateUI('sox-val', 'sox-chg', sox.regularMarketPrice, sox.regularMarketChange, sox.regularMarketChangePercent);
-                updateUI('fx-val', 'fx-chg', fx.regularMarketPrice, fx.regularMarketChange, fx.regularMarketChangePercent, true);
-                
-                const formattedWtiPrice = Number(wti.regularMarketPrice).toFixed(2);
-                updateUI('wti-val', 'wti-chg', wti.regularMarketPrice, wti.regularMarketChange, wti.regularMarketChangePercent);
-                document.getElementById('wti-val').textContent = `$${formattedWtiPrice}`;
+                updateUI('kospi-val', 'kospi-chg', kospi.regularMarketPrice, kospi.regularMarketChange, kospi.regularMarketChangePercent, FORMAT.INDEX);
+                updateUI('samsung-val', 'samsung-chg', samsung.regularMarketPrice, samsung.regularMarketChange, samsung.regularMarketChangePercent, FORMAT.KRW_STOCK);
+                updateUI('hynix-val', 'hynix-chg', hynix.regularMarketPrice, hynix.regularMarketChange, hynix.regularMarketChangePercent, FORMAT.KRW_STOCK);
+                updateUI('nasdaq-val', 'nasdaq-chg', nasdaq.regularMarketPrice, nasdaq.regularMarketChange, nasdaq.regularMarketChangePercent, FORMAT.INDEX);
+                updateUI('sox-val', 'sox-chg', sox.regularMarketPrice, sox.regularMarketChange, sox.regularMarketChangePercent, FORMAT.INDEX);
+                updateUI('fx-val', 'fx-chg', fx.regularMarketPrice, fx.regularMarketChange, fx.regularMarketChangePercent, FORMAT.EXCHANGE);
+                updateUI('wti-val', 'wti-chg', wti.regularMarketPrice, wti.regularMarketChange, wti.regularMarketChangePercent, FORMAT.OIL);
 
                 const now = new Date();
-                document.getElementById('time-text').textContent = `📊 실시간 금융망 터널 연동 완료 (동기화: ${now.toLocaleTimeString('ko-KR')} / 1분 주기)`;
+                document.getElementById('time-text').textContent = `📊 금융망 우회 터널 이중 연동 완료 (동기화: ${now.toLocaleTimeString('ko-KR')} / 1분 주기)`;
             } catch (error) {
-                console.error(error);
+                console.error("데이터 동기화 실패:", error);
                 const now = new Date();
-                document.getElementById('time-text').textContent = `❌ 프록시 터널 지연 발생 (자동 재연동 중... - ${now.toLocaleTimeString('ko-KR')})`;
+                document.getElementById('time-text').textContent = `❌ 임시 우회 터널 트래픽 지연 (자동 복구 시도 중... - ${now.toLocaleTimeString('ko-KR')})`;
             }
         }
 
